@@ -1,0 +1,60 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin - View Attendance</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    input, button { margin: 5px; padding: 5px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 10px; }
+    th { background-color: #f4f4f4; }
+  </style>
+</head>
+<body>
+  <h1>Admin - View Attendance</h1>
+  <div>
+    <label>Date: <input type="date" id="filterDate" /></label>
+    <label>Class: <input type="text" id="filterClass" /></label>
+    <label>Student: <input type="text" id="filterStudent" /></label>
+    <button onclick="fetchAttendance()">Search</button>
+  </div>
+
+  <table id="attendanceTable">
+    <thead>
+      <tr><th>Date</th><th>Class</th><th>Student</th><th>Status</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function fetchAttendance() {
+      const date = document.getElementById('filterDate').value;
+      const className = document.getElementById('filterClass').value;
+      const student = document.getElementById('filterStudent').value;
+
+      const params = new URLSearchParams();
+      if (date) params.append('date', date);
+      if (className) params.append('className', className);
+      if (student) params.append('student', student);
+
+      const response = await fetch('http://localhost:3000/attendance?' + params.toString());
+      const data = await response.json();
+
+      const tbody = document.querySelector('#attendanceTable tbody');
+      tbody.innerHTML = '';
+
+      data.forEach(record => {
+        record.students.forEach(s => {
+          if (!student || s.name === student) {
+            const row = `<tr><td>${record.date}</td><td>${record.className}</td><td>${s.name}</td><td>${s.present ? 'Present' : 'Absent'}</td></tr>`;
+            tbody.innerHTML += row;
+          }
+        });
+      });
+    }
+  </script>
+</body>
+</html>
